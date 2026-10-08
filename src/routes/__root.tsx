@@ -80,7 +80,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      {/*}
       { title: "SLIVER MOLDING DESIGNS FINISHING MASTER LTD" },
+      */},
+      {
+        title: MAINTENANCE_MODE
+          ? "Website Temporarily Unavailable | SLIVER MOLDING DESIGNS FINISHING MASTER LTD"
+          : "SLIVER MOLDING DESIGNS FINISHING MASTER LTD"
+      },
       { name: "description", content: "Creative mouldings, renovations, and 3D visualization." },
       { name: "author", content: "SLIVER MOLDING DESIGNS FINISHING MASTER LTD" },
       { property: "og:type", content: "website" },
@@ -117,6 +124,49 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+
+
+const MAINTENANCE_MODE = true;
+
+function MaintenancePage() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[#f8f7f4] px-6 py-12 text-[#272727]">
+      <div className="w-full max-w-xl text-center">
+        <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full bg-[#e8e3d8]">
+          <span className="text-3xl">⚒</span>
+        </div>
+
+        <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-[#8b7355]">
+          SLIVER MOLDING DESIGNS FINISHING MASTER LTD
+        </p>
+
+        <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
+          Website Temporarily Unavailable
+        </h1>
+
+        <p className="mx-auto max-w-md text-lg leading-relaxed text-[#666]">
+          Our website is temporarily unavailable.
+          We apologize for any inconvenience and appreciate
+          your understanding.
+        </p>
+
+        <div className="mx-auto my-10 h-px w-20 bg-[#c5b59c]" />
+
+        <p className="text-sm text-[#777]">
+          Please check back later.
+        </p>
+
+        <p className="mt-12 text-xs text-[#999]">
+          © 2026 SLIVER MOLDING DESIGNS FINISHING MASTER LTD.
+          All rights reserved.
+        </p>
+      </div>
+    </main>
+  );
+}
+
+
+{/*
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -154,7 +204,62 @@ function RootComponent() {
         />
       )}
 
+      
+
       <Outlet />
     </QueryClientProvider>
   );
 }
+  */}
+
+  
+function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+
+  const [showPreloader, setShowPreloader] = useState(true);
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  useEffect(() => {
+    if (MAINTENANCE_MODE) return;
+
+    setShowPreloader(true);
+    setIsLeaving(false);
+
+    const leaveTimer = window.setTimeout(() => {
+      setIsLeaving(true);
+    }, 2500);
+
+    const removeTimer = window.setTimeout(() => {
+      setShowPreloader(false);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(leaveTimer);
+      window.clearTimeout(removeTimer);
+    };
+  }, [pathname]);
+
+  // Display maintenance page instead of the website
+  if (MAINTENANCE_MODE) {
+    return <MaintenancePage />;
+  }
+
+  // Original website
+  return (
+    <QueryClientProvider client={queryClient}>
+      {showPreloader && (
+        <Preloader
+          isLeaving={isLeaving}
+          compact={false}
+        />
+      )}
+
+      <Outlet />
+    </QueryClientProvider>
+  );
+}
+
